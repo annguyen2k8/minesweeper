@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Tuple, List
 
 import random
 from enum import Enum
@@ -16,7 +17,7 @@ class Cell:
     __state: CellState = CellState.CLOSED
 
     __game: Minesweeper
-    __position: tuple[int, int]
+    __position: Tuple[int, int]
     __has_mine: bool = False
 
     @property
@@ -95,12 +96,12 @@ class Minesweeper:
     height: int
     mines: int
 
-    __cells: list[Cell] = []
-    __mines: list[Cell] = []
+    __cells: List[Cell] = []
+    __mines: List[Cell] = []
 
     __flag_count: int = 0
     __is_first_click: bool = True
-    __is_exploded = False
+    __is_exploded: bool = False
 
     @property
     def flag_count(self) -> int:

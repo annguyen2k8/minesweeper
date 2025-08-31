@@ -1,4 +1,7 @@
-import keyboard
+# import keyboard
+from pynput import keyboard
+from pynput.keyboard import Key, KeyCode
+from typing import Optional, Union
 
 from game import *
 from utils import *
@@ -6,7 +9,7 @@ from utils import *
 def main():
     game = Minesweeper.init_from_level(Levels.BEGINER)
     focus = [0, 0]
-    
+
     @show_latency
     def display():
         rows = [[" " for x in range(game.width)] for y in range(game.height)]
@@ -18,42 +21,54 @@ def main():
             rows[cell.y][cell.x] = char
 
         game.foreach_cell(func)
-        print('\x1b[2J\x1b[H\033[0')
-       
+        print("\x1b[2J\x1b[H\033[0")
+
         for row in rows:
             print("".join(row))
         print(game.mine_count, "mines")
 
     display()
 
-    keys = {}
-    while True:
-        event = keyboard.read_event()
-        key = event.name
-        if key not in keys:
-            keys[key] = keyboard.KEY_UP
-        if event.event_type == keyboard.KEY_DOWN and keys[key] == keyboard.KEY_UP:
+    actives = []
+
+    def on_press(key: Optional[Union[Key, KeyCode]]):
+        if key not in actives:
             match key:
-                case "space":
-                    game.open_at(*focus)
-                case "z":
-                    game.flag_at(*focus)
-                case "up":
+                case Key.up:
                     focus[1] -= 1
-                case "down":
+                case Key.down:
                     focus[1] += 1
-                case "left":
+                case Key.left:
                     focus[0] -= 1
-                case "right":
+                case Key.right:
                     focus[0] += 1
-            focus[0] = clamp(0, focus[0], game.width - 1)
-            focus[1] = clamp(0, focus[1], game.height - 1)
-            
-            display()
-            
-            if game.is_exploded or game.is_win:
-                quit()
-        keys[event.name] = event.event_type
+
+            char = getattr(key, "char", None)
+            if char != None:
+                match char:
+                    case "q":
+                        exit()
+                    case "z":
+                        game.open_at(*focus)
+                    case "x":
+                        game.flag_at(*focus)
+            actives.append(key)
+
+        focus[0] = clamp(0, focus[0], game.width - 1)
+        focus[1] = clamp(0, focus[1], game.height - 1)
+
+        display()
+
+        if game.is_exploded or game.is_win:
+            quit()
+
+    def on_release(key: Optional[Union[Key, KeyCode]]):
+        if key in actives:
+            actives.remove(key)
+
+    with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
+        listener.join()
+
 
 if __name__ == "__main__":
     main()
