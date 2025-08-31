@@ -27,4 +27,4 @@ def debug(*args):
         print(f"[{FG_AQUA + 'd' + RESET}]", *args)
 
 def clamp(nmin: int, n: int, nmax: int) -> int:
-    return max(nmin, n, nmax)
+    return max(nmin, min(n, nmax))
